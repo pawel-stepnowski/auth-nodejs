@@ -95,21 +95,14 @@ export class Provider
      */
     async _fetchIdentity(access_token)
     {
-        try
+        const { uri, token_pass_method } = this.configuration.userinfo;
+        if (token_pass_method === 'query')
         {
-            const { uri, token_pass_method } = this.configuration.userinfo;
-            if (token_pass_method === 'query')
-            {
-                return await fetch(`${uri}?${new URLSearchParams({ access_token })}`);
-            }
-            else
-            {
-                return await fetch(`${uri}`, { headers: { Authorization: `Bearer ${access_token}` } });
-            }
+            return await fetch(`${uri}?${new URLSearchParams({ access_token })}`);
         }
-        catch
+        else
         {
-            throw new AuthenticationException('userinfo', 'TODO');
+            return await fetch(`${uri}`, { headers: { Authorization: `Bearer ${access_token}` } });
         }
     }
 

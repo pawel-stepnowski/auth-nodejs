@@ -1,17 +1,23 @@
 import { Provider } from "./Provider.js";
 
-export class Github extends Provider
+export class GitHub extends Provider
 {
     /**
-     * @abstract
-     * @param {string} text
-     * @returns {import("./Provider.js").IdentityInfo}
+     * @param {Response} response
+     * @returns {Promise<import("./Provider.js").IdentityInfo & { raw: string }>}
      */
-    _extractIdentityInfo(text)
+    async _parseIdentity(response)
     {
-        const data = JSON.parse(text); 
-        const id = data.id;
-        const name = data.login;
-        return { id, name };
+        const content_type = response.headers.get('content-type');
+        if (content_type?.startsWith('application/json'))
+        {
+            const raw = await response.text();
+            const data = JSON.parse(raw);
+            const id = data.id;
+            const mail = data.login;
+            const display_name = data.login;
+            return { id, mail, display_name, raw };
+        }
+        else throw new Error('Parsing identity error. Invalid content type of the server response.');
     }
 }
