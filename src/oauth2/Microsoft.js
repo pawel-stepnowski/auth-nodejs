@@ -1,21 +1,25 @@
 import { AuthenticationException } from "../AuthenticationException.js";
 import { Provider } from "./Provider.js";
 
+/** @typedef {import("@liquescens/auth-nodejs").IdentityInfo} IdentityInfo */
+
 export class Microsoft extends Provider
 {
     /**
-     * @param {string} code
+     * @override
+     * @param {string} authorization_code
+     * @param {string} redirect_uri
      * @returns {Promise<Response>}
      */
-    async _fetchAccessToken(code)
+    async _fetchAccessToken(authorization_code, redirect_uri)
     {
         try
         {
-            const { token_uri, redirect_uri, client_id, client_secret } = this.configuration;
+            const { token_uri, client_id, client_secret } = this.configuration.access_token;
             const body = 
             {
                 grant_type: 'authorization_code',
-                code,
+                code: authorization_code,
                 redirect_uri,
                 client_id,
                 client_secret,
