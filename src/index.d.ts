@@ -8,6 +8,7 @@ declare module '@liquescens/auth-nodejs'
     }
     export class Authentication
     {
+        providers: Record<string, OAuth2.Provider>
         constructor(providers: Record<string, OAuth2.Provider>)
     }
     export class AuthenticationException
@@ -33,6 +34,7 @@ declare module '@liquescens/auth-nodejs'
         }
         export class Provider
         {
+            configuration: ProviderConfiguration
             constructor(configuration: ProviderConfiguration);
             fetchAccessToken(authorization_code: string, redirect_uri: string): Promise<string>
             fetchUserInfo(access_token: string): Promise<IdentityInfo & { raw: string; }>
