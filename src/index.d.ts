@@ -33,6 +33,7 @@ declare module '@liquescens/auth-nodejs'
         }
         export class Provider
         {
+            constructor(configuration: ProviderConfiguration);
             fetchAccessToken(authorization_code: string, redirect_uri: string): Promise<string>
             fetchUserInfo(access_token: string): Promise<IdentityInfo & { raw: string; }>
         }
