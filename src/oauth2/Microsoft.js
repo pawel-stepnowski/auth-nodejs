@@ -7,7 +7,7 @@ export class Microsoft extends Provider
      * @param {string} code
      * @returns {Promise<Response>}
      */
-    async _fetchToken(code)
+    async _fetchAccessToken(code)
     {
         try
         {

@@ -1,25 +1,7 @@
 import { AuthenticationException } from "../AuthenticationException.js";
 
-/**
- * @typedef OAuth2ProviderConfiguration
- * @property {string} client_id
- * @property {string} client_secret
- * @property {string} token_uri
- * @property {string} return_uri
- * @property {{ uri: string, token_pass_method: 'query' | 'header' }} userinfo 
- */
-
-/**
- * @typedef {OAuth2ProviderConfiguration & { id: string, redirect_uri: string }} OAuth2Configuration
- * @property {string} redirect_uri
- */
-
-/**
- * @typedef IdentityInfo
- * @property {string} id
- * @property {string} mail
- * @property {string} display_name
- */
+/** @typedef {import("@liquescens/auth-nodejs").IdentityInfo} IdentityInfo */
+/** @typedef {import("@liquescens/auth-nodejs").OAuth2.ProviderConfiguration} ProviderConfiguration */
 
 /**
  * @abstract
@@ -27,7 +9,7 @@ import { AuthenticationException } from "../AuthenticationException.js";
 export class Provider
 {
     /**
-     * @param {OAuth2Configuration} configuration
+     * @param {ProviderConfiguration} configuration
      */
     constructor(configuration)
     {
@@ -36,12 +18,13 @@ export class Provider
 
     /**
      * @param {string} authorization_code
+     * @param {string} redirect_uri
      * @returns {Promise<string>}
      */
-    async fetchAccessToken(authorization_code)
+    async fetchAccessToken(authorization_code, redirect_uri)
     {
         if (typeof authorization_code !== 'string') throw new AuthenticationException('authorization_code', 'Authorization code is not of type string.');
-        const token_response = await this._fetchToken(authorization_code);
+        const token_response = await this._fetchAccessToken(authorization_code, redirect_uri);
         const { access_token } = await this._parseAccessToken(token_response);
         return access_token;
     }
@@ -60,33 +43,27 @@ export class Provider
     }
 
     /**
-     * @param {string} code
+     * @param {string} authorization_code
+     * @param {string} redirect_uri
      * @returns {Promise<Response>}
      */
-    async _fetchToken(code)
+    async _fetchAccessToken(authorization_code, redirect_uri)
     {
-        try
+        const { token_uri, client_id, client_secret } = this.configuration.access_token;
+        const body = 
         {
-            const { token_uri, redirect_uri, client_id, client_secret } = this.configuration;
-            const body = 
-            {
-                grant_type: 'authorization_code',
-                code,
-                redirect_uri,
-                client_id,
-                client_secret
-            };
-            return await fetch(token_uri,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(body).toString()
-            });
-        }
-        catch
+            grant_type: 'authorization_code',
+            code: authorization_code,
+            redirect_uri,
+            client_id,
+            client_secret
+        };
+        return await fetch(token_uri,
         {
-            throw new AuthenticationException('token', 'TODO');
-        }
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(body).toString()
+        });
     }
 
     /**
@@ -95,7 +72,7 @@ export class Provider
      */
     async _fetchIdentity(access_token)
     {
-        const { uri, token_pass_method } = this.configuration.userinfo;
+        const { uri, token_pass_method } = this.configuration.user_info;
         if (token_pass_method === 'query')
         {
             return await fetch(`${uri}?${new URLSearchParams({ access_token })}`);
