@@ -1,4 +1,4 @@
-import { AuthenticationException } from "../AuthenticationException.js";
+import { isNotStringOrWhitespace } from "../utilities.js";
 import { Provider } from "./Provider.js";
 
 /** @typedef {import("@liquescens/auth-nodejs").IdentityInfo} IdentityInfo */
@@ -13,29 +13,22 @@ export class Microsoft extends Provider
      */
     async _fetchAccessToken(authorization_code, redirect_uri)
     {
-        try
+        const { token_uri, client_id, client_secret } = this.configuration.access_token;
+        const body = 
         {
-            const { token_uri, client_id, client_secret } = this.configuration.access_token;
-            const body = 
-            {
-                grant_type: 'authorization_code',
-                code: authorization_code,
-                redirect_uri,
-                client_id,
-                client_secret,
-                scope: "https://graph.microsoft.com/.default"
-            };
-            return await fetch(token_uri,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(body).toString()
-            });
-        }
-        catch
+            grant_type: 'authorization_code',
+            code: authorization_code,
+            redirect_uri,
+            client_id,
+            client_secret,
+            scope: "https://graph.microsoft.com/.default"
+        };
+        return await fetch(token_uri,
         {
-            throw new AuthenticationException('token', 'TODO');
-        }
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(body).toString()
+        });
     }
 
     /**
@@ -54,7 +47,7 @@ export class Microsoft extends Provider
             {
                 const id = data.id;
                 const mail = data.mail;
-                const display_name = data.displayName;
+                const display_name = isNotStringOrWhitespace(data.displayName) ? mail : data.displayName;
                 return { id, mail, display_name, raw };
             }
             else throw new Error('Parsing identity error. Invalid odata context.');
@@ -62,3 +55,4 @@ export class Microsoft extends Provider
         else throw new Error('Parsing identity error. Invalid content type of the server response.');
     }
 }
+

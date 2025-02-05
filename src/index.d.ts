@@ -11,10 +11,9 @@ declare module '@liquescens/auth-nodejs'
         providers: Record<string, OAuth2.Provider>
         constructor(providers: Record<string, OAuth2.Provider>)
     }
-    export class AuthenticationException
+    export class AuthenticationError extends Error
     {
         category: string
-        message: string
     }
     export namespace OAuth2
     {

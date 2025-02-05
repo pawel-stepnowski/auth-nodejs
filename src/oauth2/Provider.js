@@ -1,4 +1,4 @@
-import { AuthenticationException } from "../AuthenticationException.js";
+import { AuthenticationError } from "../AuthenticationError.js";
 
 /** @typedef {import("@liquescens/auth-nodejs").IdentityInfo} IdentityInfo */
 /** @typedef {import("@liquescens/auth-nodejs").OAuth2.ProviderConfiguration} ProviderConfiguration */
@@ -23,7 +23,7 @@ export class Provider
      */
     async fetchAccessToken(authorization_code, redirect_uri)
     {
-        if (typeof authorization_code !== 'string') throw new AuthenticationException('authorization_code', 'Authorization code is not of type string.');
+        if (typeof authorization_code !== 'string') throw new AuthenticationError('authorization_code', 'Authorization code is not of type string.');
         const token_response = await this._fetchAccessToken(authorization_code, redirect_uri);
         const { access_token } = await this._parseAccessToken(token_response);
         return access_token;
@@ -35,7 +35,7 @@ export class Provider
      */
     async fetchUserInfo(access_token)
     {
-        if (typeof access_token !== 'string') throw new AuthenticationException('token', 'Access token is not of type string.');
+        if (typeof access_token !== 'string') throw new AuthenticationError('token', 'Access token is not of type string.');
         const identity_response = await this._fetchIdentity(access_token);
         const identity = await this._parseIdentity(identity_response);
         this._validateIdentity(identity);
@@ -97,7 +97,7 @@ export class Provider
         const error_description =  data.get('error_description') ?? '';
         const message = ['Error parsing access token.'];
         if (error || error_description) message.push(`${error_description} ${error}`);
-        throw new AuthenticationException('token', message.join(' '));
+        throw new AuthenticationError('token', message.join(' '));
     }
 
     /**
@@ -114,7 +114,7 @@ export class Provider
         const error_description =  data.error_description ?? '';
         const message = ['Error parsing access token.'];
         if (error || error_description) message.push(`${error_description} ${error}`);
-        throw new AuthenticationException('token', message.join(' '));
+        throw new AuthenticationError('token', message.join(' '));
     }
 
     /**

@@ -1,5 +1,5 @@
 
-export class AuthenticationException
+export class AuthenticationError extends Error
 {
     /**
      * @param {'authorization_code' | 'token' | 'userinfo'} category 
@@ -7,7 +7,7 @@ export class AuthenticationException
      */
     constructor(category, message)
     {
+        super(message);
         this.category = category;
-        this.message = message;
     }
 }
